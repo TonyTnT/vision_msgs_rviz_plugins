@@ -66,11 +66,32 @@ protected:
   rviz_common::properties::StringProperty * string_property_;
   std::unordered_map<int, visualization_msgs::msg::Marker::SharedPtr> score_markers;
 
+  // std::map<std::string, QColor> idToColorMap = {
+  //   {"car", QColor(255, 165, 0)},
+  //   {"person", QColor(0, 0, 255)},
+  //   {"cyclist", QColor(255, 255, 0)},
+  //   {"motorcycle", QColor(230, 230, 250)}};
+    
   std::map<std::string, QColor> idToColorMap = {
-    {"car", QColor(255, 165, 0)},
-    {"person", QColor(0, 0, 255)},
-    {"cyclist", QColor(255, 255, 0)},
-    {"motorcycle", QColor(230, 230, 250)}};
+    {"cabinet", QColor(123, 45, 67)},
+    {"bed", QColor(89, 234, 12)},
+    {"chair", QColor(178, 56, 90)},
+    {"sofa", QColor(210, 123, 150)},
+    {"table", QColor(34, 67, 200)},
+    {"door", QColor(150, 78, 210)},
+    {"window", QColor(45, 190, 100)},
+    {"bookshelf", QColor(200, 34, 56)},
+    {"picture", QColor(67, 150, 78)},
+    {"counter", QColor(123, 210, 45)},
+    {"desk", QColor(56, 90, 178)},
+    {"curtain", QColor(234, 12, 89)},
+    {"refrigerator", QColor(100, 45, 190)},
+    {"showercurtrain", QColor(78, 178, 56)},
+    {"toilet", QColor(210, 123, 34)},
+    {"sink", QColor(56, 90, 200)},
+    {"bathtub", QColor(45, 67, 150)},
+    {"garbagebin", QColor(150, 78, 210)}
+  };
 
   visualization_msgs::msg::Marker::SharedPtr get_marker(
     const vision_msgs::msg::BoundingBox3D & box) const
@@ -136,7 +157,7 @@ protected:
         const auto & result_with_highest_score = *iter;
         color = getColor(result_with_highest_score.hypothesis.class_id);
         if (show_score) {
-          ShowScore(msg->detections[idx], result_with_highest_score.hypothesis.score, idx);
+          ShowScore(msg->detections[idx], result_with_highest_score.hypothesis.score, result_with_highest_score.hypothesis.class_id, idx);
         }
       } else {
         color = getColor(msg->detections[idx].results[0].hypothesis.class_id);
@@ -170,7 +191,7 @@ protected:
       const auto & result_with_highest_score = *iter;
       color = getColor(result_with_highest_score.hypothesis.class_id);
       if (show_score) {
-        ShowScore(*msg, result_with_highest_score.hypothesis.score, 0);
+        ShowScore(*msg, result_with_highest_score.hypothesis.score, result_with_highest_score.hypothesis.class_id, 0);
       }
     } else {
       color = getColor(msg->results[0].hypothesis.class_id);
@@ -220,7 +241,7 @@ protected:
           });
         color = getColor(iter->hypothesis.class_id);
         if (show_score) {
-          ShowScore(msg->detections[idx], iter->hypothesis.score, idx);
+          ShowScore(msg->detections[idx], iter->hypothesis.score, iter->hypothesis.class_id, idx);
         }
       }
       geometry_msgs::msg::Vector3 dimensions = box.size;
@@ -338,7 +359,7 @@ protected:
         });
       color = getColor(iter->hypothesis.class_id);
       if (show_score) {
-        ShowScore(*msg, iter->hypothesis.score, 0);
+        ShowScore(*msg, iter->hypothesis.score, iter->hypothesis.class_id, 0);
       }
     } else {
       color = getColor(msg->results[0].hypothesis.class_id);
@@ -441,7 +462,7 @@ protected:
   }
 
   void ShowScore(
-    const vision_msgs::msg::Detection3D detection, const double score,
+    const vision_msgs::msg::Detection3D detection, const double score, const std::string cls_name,
     const size_t idx)
   {
     auto marker = std::make_shared<Marker>();
@@ -449,9 +470,7 @@ protected:
     marker->action = Marker::ADD;
     marker->header = detection.header;
     std::ostringstream oss;
-    oss << std::fixed;
-    oss << std::setprecision(2);
-    oss << score;
+    oss << cls_name << "_" << std::fixed << std::setprecision(2) << score;
     marker->text = oss.str();
     marker->scale.z = 0.5;         // Set the size of the text
     marker->id = idx;
